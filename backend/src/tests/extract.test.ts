@@ -97,9 +97,12 @@ describe('Extraction API', () => {
           url: null,
           skills: ['React', 'Node.js', 'TypeScript'],
           fit: FitRating.STRONG,
+          briefJD: null,
+          contacts: undefined,
           rawJD: validText,
           user: { connect: { id: mockUser.id } },
         },
+        include: { contacts: true },
       });
     });
 
@@ -240,9 +243,12 @@ Hope this helps!`,
           sourceUrl: validUrl,
           skills: ['React', 'Node.js', 'TypeScript'],
           fit: FitRating.STRONG,
+          briefJD: null,
+          contacts: undefined,
           rawJD: undefined,
           user: { connect: { id: mockUser.id } },
         },
+        include: { contacts: true },
       });
     });
 

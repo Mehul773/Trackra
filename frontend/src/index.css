@@ -467,9 +467,9 @@ button, input, textarea, select {
 
 .kanban-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(250px, 1fr));
-  gap: 1.5rem;
-  min-width: 1300px;
+  grid-template-columns: repeat(5, minmax(240px, 1fr));
+  gap: 1.25rem;
+  min-width: 0;
   height: calc(100vh - 120px);
 }
 
@@ -556,6 +556,8 @@ button, input, textarea, select {
   position: relative;
   transition: all var(--transition-normal);
   text-align: left;
+  cursor: pointer;
+  user-select: none;
 }
 
 .job-card:hover {
@@ -581,9 +583,13 @@ button, input, textarea, select {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-headers);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.3;
 }
 
 .company-name {
@@ -608,8 +614,11 @@ button, input, textarea, select {
   color: var(--text-muted);
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -880,4 +889,544 @@ button, input, textarea, select {
 }
 
 
+/* ──────────────────────────────────────────────────────────────
+   Global Search Bar
+   ────────────────────────────────────────────────────────────── */
+.nav-search {
+  flex: 1;
+  max-width: 420px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 1.5rem;
+}
 
+.search-icon {
+  position: absolute;
+  left: 0.875rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+  color: var(--text-headers);
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  outline: none;
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.search-clear:hover {
+  color: var(--text-headers);
+  background: var(--border);
+}
+
+/* Search Results Bar */
+.search-results-bar {
+  padding: 0.5rem 2rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.search-results-bar strong {
+  color: var(--text-headers);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Drag-and-Drop Visual Feedback
+   ────────────────────────────────────────────────────────────── */
+.job-card--dragging {
+  opacity: 0.92;
+  transform: rotate(2deg) scale(1.03);
+  box-shadow: 0 16px 40px rgba(79, 70, 229, 0.3), 0 0 0 2px var(--primary);
+  border-color: var(--primary) !important;
+  z-index: 999;
+}
+
+.column-body--drag-over {
+  background: var(--primary-glow);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.load-more-indicator {
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px dashed var(--border);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Card Enhancements
+   ────────────────────────────────────────────────────────────── */
+.skill-pill--more {
+  background: var(--primary-glow);
+  color: var(--primary);
+  border-color: rgba(79, 70, 229, 0.25);
+  font-weight: 600;
+}
+
+.card-contact-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.contact-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Job Detail Modal
+   ────────────────────────────────────────────────────────────── */
+.detail-modal {
+  max-width: 700px;
+}
+
+.detail-modal .modal-header {
+  gap: 1rem;
+}
+
+.detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-status-badge.status-NOT_APPLIED {
+  background: var(--bg-not-applied);
+  color: var(--color-not-applied);
+}
+.detail-status-badge.status-APPLIED {
+  background: var(--bg-applied);
+  color: var(--color-applied);
+}
+.detail-status-badge.status-INTERVIEW {
+  background: var(--bg-interview);
+  color: var(--color-interview);
+}
+.detail-status-badge.status-OFFER {
+  background: var(--bg-offer);
+  color: var(--color-offer);
+}
+.detail-status-badge.status-REJECTED {
+  background: var(--bg-rejected);
+  color: var(--color-rejected);
+}
+
+.detail-section {
+  margin-bottom: 1.5rem;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.detail-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-info-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.detail-info-value {
+  font-size: 0.875rem;
+  color: var(--text-headers);
+  font-weight: 500;
+}
+
+.detail-jd {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.65;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.detail-contacts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.detail-contacts-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-contacts-table td {
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.detail-contacts-table tr:last-child td {
+  border-bottom: none;
+}
+
+.detail-contacts-table a {
+  color: var(--primary);
+  font-size: 0.8125rem;
+}
+
+.detail-notes {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.6;
+  font-style: italic;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+}
+
+.detail-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--primary);
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.detail-link:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
+/* Copy Button */
+.btn-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-headers);
+}
+
+.btn-copy:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--text-muted);
+}
+
+.btn-copy.copied {
+  background: var(--bg-offer);
+  border-color: var(--color-offer);
+  color: var(--color-offer);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Portfolio Link
+   ────────────────────────────────────────────────────────────── */
+.portfolio-link {
+  color: var(--primary) !important;
+  border-color: rgba(79, 70, 229, 0.25) !important;
+  background: var(--primary-glow) !important;
+}
+
+.portfolio-link:hover {
+  background: rgba(79, 70, 229, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Mobile Kanban Tabs
+   ────────────────────────────────────────────────────────────── */
+.kanban-tabs {
+  display: none;
+}
+
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-headers);
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Mobile Responsive Breakpoints
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .kanban-grid {
+    grid-template-columns: repeat(5, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .kanban-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Show hamburger, hide nav-actions by default */
+  .nav-hamburger {
+    display: flex;
+  }
+
+  .nav-actions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1rem 2rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 99;
+    box-shadow: 0 8px 30px var(--glass-shadow);
+  }
+
+  .nav-actions--open {
+    display: flex;
+  }
+
+  .nav-container {
+    position: relative;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-search {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
+    margin: 0.5rem 0 0;
+  }
+
+  .brand-name {
+    font-size: 1.25rem;
+  }
+
+  .user-profile {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Show tabs, hide desktop grid columns */
+  .kanban-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kanban-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .kanban-tab--active {
+    border-color: currentColor;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-headers);
+    font-weight: 600;
+  }
+
+  .kanban-tab-count {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0 0.375rem;
+    border-radius: var(--radius-full);
+    font-size: 0.6875rem;
+  }
+
+  .kanban-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: calc(100vh - 200px);
+  }
+
+  .kanban-column {
+    display: none;
+    height: 100%;
+  }
+
+  .kanban-column--active {
+    display: flex;
+  }
+
+  .kanban-column .column-header {
+    display: none;
+  }
+
+  .kanban-container {
+    padding: 0;
+  }
+
+  /* Detail modal responsive */
+  .detail-modal {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+
+  .detail-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    max-width: 95vw;
+  }
+
+  /* Feature grid on landing page */
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-box {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-search {
+    margin: 0.375rem 0 0;
+  }
+
+  .search-input {
+    font-size: 0.8125rem;
+    padding: 0.5rem 2.25rem 0.5rem 2.25rem;
+  }
+
+  .kanban-tab-label {
+    display: none;
+  }
+
+  .kanban-tab {
+    padding: 0.5rem;
+  }
+
+  .btn span {
+    display: none;
+  }
+
+  .btn svg {
+    margin: 0;
+  }
+}

@@ -1,4 +1,4 @@
-import { Job, Prisma } from '@prisma/client';
+import { Job, Contact, Prisma } from '@prisma/client';
 import { prisma } from '../config/database';
 import { JobStatus } from '../enums/JobStatus.enum';
 import { ApiError } from '../utils/ApiError';
@@ -17,7 +17,7 @@ import { ApiError } from '../utils/ApiError';
 export const getAllJobs = async (
   userId: string,
   status?: JobStatus
-): Promise<Job[]> => {
+): Promise<(Job & { contacts: Contact[] })[]> => {
   const where: Prisma.JobWhereInput = { userId };
 
   if (status) {
@@ -26,6 +26,7 @@ export const getAllJobs = async (
 
   return prisma.job.findMany({
     where,
+    include: { contacts: true },
     orderBy: { createdAt: 'desc' },
   });
 };
@@ -37,12 +38,13 @@ export const getAllJobs = async (
 export const getJobById = async (
   jobId: string,
   userId: string
-): Promise<Job> => {
+): Promise<Job & { contacts: Contact[] }> => {
   const job = await prisma.job.findFirst({
     where: {
       id: jobId,
       userId, // Ensures user can only see their own jobs
     },
+    include: { contacts: true },
   });
 
   if (!job) {
@@ -58,15 +60,25 @@ export const getJobById = async (
  */
 export const createJob = async (
   userId: string,
-  data: Prisma.JobCreateWithoutUserInput
-): Promise<Job> => {
+  data: any
+): Promise<Job & { contacts: Contact[] }> => {
+  const { contacts, ...jobData } = data;
   return prisma.job.create({
     data: {
-      ...data,
+      ...jobData,
       user: {
         connect: { id: userId },
       },
+      contacts: contacts ? {
+        create: contacts.map((c: any) => ({
+          name: c.name,
+          email: c.email || null,
+          phone: c.phone || null,
+          role: c.role || null,
+        }))
+      } : undefined,
     },
+    include: { contacts: true },
   });
 };
 
@@ -77,14 +89,37 @@ export const createJob = async (
 export const updateJob = async (
   jobId: string,
   userId: string,
-  data: Prisma.JobUpdateInput
-): Promise<Job> => {
+  data: any
+): Promise<Job & { contacts: Contact[] }> => {
   // First check that the job belongs to this user
   await getJobById(jobId, userId);
 
-  return prisma.job.update({
-    where: { id: jobId },
-    data,
+  const { contacts, ...jobData } = data;
+
+  return prisma.$transaction(async (tx) => {
+    // If contacts list is provided, delete old ones and create new ones
+    if (contacts !== undefined) {
+      await tx.contact.deleteMany({
+        where: { jobId },
+      });
+      if (contacts && contacts.length > 0) {
+        await tx.contact.createMany({
+          data: contacts.map((c: any) => ({
+            name: c.name,
+            email: c.email || null,
+            phone: c.phone || null,
+            role: c.role || null,
+            jobId,
+          })),
+        });
+      }
+    }
+
+    return tx.job.update({
+      where: { id: jobId },
+      data: jobData,
+      include: { contacts: true },
+    });
   });
 };
 
@@ -108,9 +143,10 @@ export const deleteJob = async (
  * Get all jobs for CSV export.
  * Same as getAllJobs but without status filter — exports everything.
  */
-export const getJobsForExport = async (userId: string): Promise<Job[]> => {
+export const getJobsForExport = async (userId: string): Promise<(Job & { contacts: Contact[] })[]> => {
   return prisma.job.findMany({
     where: { userId },
+    include: { contacts: true },
     orderBy: { createdAt: 'desc' },
   });
 };

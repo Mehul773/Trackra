@@ -33,6 +33,7 @@ export const extractFromUrl = asyncHandler(
       sourceUrl: url,
       skills: extracted.skills,
       fit: extracted.fit,
+      briefJD: extracted.briefJD,
       rawJD: undefined, // We didn't get the raw JD text from URL scraping
     });
 
@@ -64,6 +65,7 @@ export const extractFromText = asyncHandler(
       url: extracted.url,
       skills: extracted.skills,
       fit: extracted.fit,
+      briefJD: extracted.briefJD,
       rawJD: text,
     });
 

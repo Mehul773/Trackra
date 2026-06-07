@@ -26,6 +26,17 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  role: string | null;
+  jobId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -39,6 +50,8 @@ export interface Job {
   status: JobStatus;
   notes: string | null;
   rawJD: string | null;
+  briefJD: string | null;
+  contacts: Contact[];
   userId: string;
   appliedOn: string | null;
   interviewOn: string | null;

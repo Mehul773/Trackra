@@ -64,6 +64,7 @@ describe('Jobs API (CRUD)', () => {
       expect(res.body.data).toHaveLength(2);
       expect(mockJobFindMany).toHaveBeenCalledWith({
         where: { userId: mockUser.id },
+        include: { contacts: true },
         orderBy: { createdAt: 'desc' },
       });
     });
@@ -78,6 +79,7 @@ describe('Jobs API (CRUD)', () => {
       expect(res.status).toBe(200);
       expect(mockJobFindMany).toHaveBeenCalledWith({
         where: { userId: mockUser.id, status: JobStatus.APPLIED },
+        include: { contacts: true },
         orderBy: { createdAt: 'desc' },
       });
     });
@@ -113,6 +115,7 @@ describe('Jobs API (CRUD)', () => {
       expect(res.body.data.title).toBe('Backend Developer');
       expect(mockJobFindFirst).toHaveBeenCalledWith({
         where: { id: 'job-1', userId: mockUser.id },
+        include: { contacts: true },
       });
     });
 
@@ -161,8 +164,10 @@ describe('Jobs API (CRUD)', () => {
       expect(mockJobCreate).toHaveBeenCalledWith({
         data: {
           ...inputJob,
+          contacts: undefined,
           user: { connect: { id: mockUser.id } },
         },
+        include: { contacts: true },
       });
     });
 
@@ -200,10 +205,12 @@ describe('Jobs API (CRUD)', () => {
       expect(res.body.data.status).toBe(JobStatus.INTERVIEW);
       expect(mockJobFindFirst).toHaveBeenCalledWith({
         where: { id: 'job-1', userId: mockUser.id },
+        include: { contacts: true },
       });
       expect(mockJobUpdate).toHaveBeenCalledWith({
         where: { id: 'job-1' },
         data: updateInput,
+        include: { contacts: true },
       });
     });
 

@@ -19,4 +19,5 @@ export interface ExtractedJob {
   skills: string[];
   fit: FitRating;
   experience: string | null;
+  briefJD: string | null;
 }

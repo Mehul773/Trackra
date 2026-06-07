@@ -81,10 +81,6 @@ export const geminiModel = {
   }
 };
 
-/**
- * The system prompt that instructs Gemini/Ollama on how to parse job descriptions.
- * Exported separately so it can be reused and tested.
- */
 export const JD_EXTRACTION_PROMPT = `You are a job description parser. Extract structured data and return ONLY valid JSON with no markdown, no explanation:
 {
   "title": "exact job title",
@@ -94,5 +90,6 @@ export const JD_EXTRACTION_PROMPT = `You are a job description parser. Extract s
   "url": "apply URL if found in text, else null",
   "skills": ["max 10 technical skills required"],
   "fit": "STRONG if Node.js/Express/PostgreSQL/Redis/AWS match well, STRETCH if partial match, WEAK if no match",
-  "experience": "required experience e.g. 1-3 years"
+  "experience": "required experience e.g. 1-3 years",
+  "briefJD": "a brief 2-3 sentence summarized description of the role, key responsibilities, and requirements"
 }`;

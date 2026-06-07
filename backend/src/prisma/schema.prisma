@@ -61,6 +61,7 @@ model Job {
   status      JobStatus  @default(NOT_APPLIED)
   notes       String?
   rawJD       String?    // The raw job description text (for reference)
+  briefJD     String?    // A short summarized description of the job
   appliedOn   DateTime?
   interviewOn DateTime?
 
@@ -69,10 +70,31 @@ model Job {
   userId      String
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Relations
+  contacts    Contact[]
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   // Index on userId for fast lookups — every query filters by user
   @@index([userId])
   @@map("jobs")
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  role      String?  // e.g. "Recruiter", "Hiring Manager"
+
+  // Relations
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobId])
+  @@map("contacts")
 }

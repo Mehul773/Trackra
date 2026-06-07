@@ -38,6 +38,11 @@ jest.mock('../config/database', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    contact: {
+      deleteMany: jest.fn(),
+      createMany: jest.fn(),
+    },
+    $transaction: jest.fn((callback) => callback(mockPrisma)),
   };
   return { prisma: mockPrisma };
 });

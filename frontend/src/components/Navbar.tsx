@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Briefcase, Sparkles, Download } from 'lucide-react';
+import { LogOut, Briefcase, Sparkles, Download, Search, X, ExternalLink, Menu } from 'lucide-react';
 
 interface NavbarProps {
   onAddManual: () => void;
   onOpenExtract: () => void;
   onDownloadCsv: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onAddManual,
   onOpenExtract,
   onDownloadCsv,
+  searchQuery,
+  onSearchChange,
 }) => {
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <nav className="navbar">
@@ -26,8 +31,38 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="brand-name">Trackra</span>
         </div>
 
+        {/* Global Search Bar (center) */}
+        <div className="nav-search">
+          <Search size={16} className="search-icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search jobs, companies, contacts..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              className="search-clear"
+              onClick={() => onSearchChange('')}
+              title="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Hamburger */}
+        <button
+          className="nav-hamburger"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          title="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+
         {/* Action Controls */}
-        <div className="nav-actions">
+        <div className={`nav-actions${mobileMenuOpen ? ' nav-actions--open' : ''}`}>
           <button onClick={onOpenExtract} className="btn btn-primary btn-sparkle">
             <Sparkles size={16} />
             <span>AI Quick Add</span>
@@ -40,6 +75,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button onClick={onDownloadCsv} className="btn btn-icon" title="Export pipeline to CSV">
             <Download size={18} />
           </button>
+
+          {/* Portfolio Link */}
+          <a
+            href="https://mehul773.github.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-icon portfolio-link"
+            title="Developer Portfolio"
+          >
+            <ExternalLink size={18} />
+          </a>
 
           {/* User Profile & Logout */}
           {user && (

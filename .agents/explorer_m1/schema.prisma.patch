@@ -1,0 +1,36 @@
+--- backend/src/prisma/schema.prisma
++++ backend/src/prisma/schema.prisma
+@@ -62,2 +62,3 @@
+   notes       String?
+   rawJD       String?    // The raw job description text (for reference)
++  briefJD     String?    // A short summarized description of the job
+   appliedOn   DateTime?
+@@ -69,3 +70,6 @@
+   userId      String
+   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
++  // Relations
++  contacts    Contact[]
++
+   createdAt   DateTime   @default(now())
+@@ -78,2 +82,18 @@
+   @@map("jobs")
+ }
++
++model Contact {
++  id        String   @id @default(cuid())
++  name      String
++  email     String?
++  phone     String?
++  role      String?  // e.g. "Recruiter", "Hiring Manager"
++
++  // Relations
++  jobId     String
++  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
++
++  createdAt DateTime @default(now())
++  updatedAt DateTime @updatedAt
++
++  @@index([jobId])
++  @@map("contacts")
++}

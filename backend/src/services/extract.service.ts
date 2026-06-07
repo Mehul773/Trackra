@@ -127,5 +127,6 @@ const validateExtraction = (data: unknown): ExtractedJob => {
     skills,
     fit: validFit,
     experience: raw['experience'] ? String(raw['experience']) : null,
+    briefJD: raw['briefJD'] ? String(raw['briefJD']) : null,
   };
 };

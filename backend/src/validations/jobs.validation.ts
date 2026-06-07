@@ -10,6 +10,17 @@ import { FitRating } from '../enums/FitRating.enum';
  * request before it reaches the controller.
  */
 
+const contactSchema = Joi.object({
+  name: Joi.string().trim().min(1).max(200).required().messages({
+    'string.empty': 'Contact name is required',
+  }),
+  email: Joi.string().email().trim().allow(null, '').optional().messages({
+    'string.email': 'Contact email must be a valid email',
+  }),
+  phone: Joi.string().trim().allow(null, '').optional(),
+  role: Joi.string().trim().allow(null, '').optional(),
+});
+
 /**
  * POST /api/jobs — Create a new job manually.
  * Title and company are required; everything else is optional.
@@ -50,8 +61,10 @@ export const createJobSchema = Joi.object({
     }),
   notes: Joi.string().trim().max(5000).allow(null, '').optional(),
   rawJD: Joi.string().max(50000).allow(null, '').optional(),
+  briefJD: Joi.string().max(20000).allow(null, '').optional(),
   appliedOn: Joi.date().iso().allow(null).optional(),
   interviewOn: Joi.date().iso().allow(null).optional(),
+  contacts: Joi.array().items(contactSchema).optional(),
 });
 
 /**
@@ -78,8 +91,10 @@ export const updateJobSchema = Joi.object({
     .optional(),
   notes: Joi.string().trim().max(5000).allow(null, '').optional(),
   rawJD: Joi.string().max(50000).allow(null, '').optional(),
+  briefJD: Joi.string().max(20000).allow(null, '').optional(),
   appliedOn: Joi.date().iso().allow(null).optional(),
   interviewOn: Joi.date().iso().allow(null).optional(),
+  contacts: Joi.array().items(contactSchema).optional(),
 })
   .min(1) // At least one field must be provided for an update
   .messages({

@@ -64,10 +64,12 @@ export const extractFromUrl = async (url: string): Promise<Job> => {
 
 /**
  * Download the pipeline as a CSV file.
+ * Accepts an optional search query to export only filtered results.
  * Creates an invisible link to trigger browser download with correct headers.
  */
-export const downloadCsv = async (): Promise<void> => {
-  const response = await api.get('/jobs/export/csv', { responseType: 'blob' });
+export const downloadCsv = async (searchQuery?: string): Promise<void> => {
+  const params = searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : '';
+  const response = await api.get(`/jobs/export/csv${params}`, { responseType: 'blob' });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;

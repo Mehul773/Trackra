@@ -6,9 +6,11 @@ interface JobCardProps {
   job: Job;
   onEdit: (job: Job) => void;
   onDelete: (id: string) => void;
+  onClick: (job: Job) => void;
+  isDragging?: boolean;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete, onClick, isDragging }) => {
   const getFitLabel = (fit: FitRating | null) => {
     switch (fit) {
       case FitRating.STRONG:
@@ -35,7 +37,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
   const dateLabel = formatDate(job.appliedOn || job.createdAt);
 
   return (
-    <div className="job-card animate-fade-in">
+    <div
+      className={`job-card animate-fade-in${isDragging ? ' job-card--dragging' : ''}`}
+      onClick={() => onClick(job)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter') onClick(job); }}
+    >
       {/* Header */}
       <div className="card-header">
         <div className="card-brand">
@@ -48,14 +56,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
         {/* Action Controls */}
         <div className="card-actions">
           {job.url && (
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="action-btn" title="View Job Description">
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="action-btn"
+              title="View Job Posting"
+              onClick={(e) => e.stopPropagation()}
+            >
               <ExternalLink size={14} />
             </a>
           )}
-          <button onClick={() => onEdit(job)} className="action-btn" title="Edit application">
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(job); }}
+            className="action-btn"
+            title="Edit application"
+          >
             <Edit2 size={14} />
           </button>
-          <button onClick={() => onDelete(job.id)} className="action-btn delete-btn" title="Delete application">
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(job.id); }}
+            className="action-btn delete-btn"
+            title="Delete application"
+          >
             <Trash2 size={14} />
           </button>
         </div>
@@ -84,11 +107,24 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete }) => {
       {/* Skills */}
       {job.skills && job.skills.length > 0 && (
         <div className="card-skills">
-          {job.skills.map((skill, index) => (
+          {job.skills.slice(0, 4).map((skill, index) => (
             <span key={index} className="skill-pill">
               {skill}
             </span>
           ))}
+          {job.skills.length > 4 && (
+            <span className="skill-pill skill-pill--more">
+              +{job.skills.length - 4}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Contact indicator */}
+      {job.contacts && job.contacts.length > 0 && (
+        <div className="card-contact-indicator">
+          <span className="contact-dot" />
+          <span>{job.contacts.length} contact{job.contacts.length > 1 ? 's' : ''}</span>
         </div>
       )}
 
