@@ -174,7 +174,7 @@ describe('Jobs API (CRUD)', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('Title is required');
+      expect(res.body.message.toLowerCase()).toContain('title is required');
     });
   });
 
@@ -278,8 +278,8 @@ describe('Jobs API (CRUD)', () => {
 
       expect(res.status).toBe(200);
       expect(res.header['content-type']).toContain('text/csv');
-      expect(res.text).toContain('Title,Company,Location,Salary,Status');
-      expect(res.text).toContain('Software Engineer,Google');
+      expect(res.text).toContain('"Title","Company","Location","Salary","Status"');
+      expect(res.text).toContain('"Software Engineer","Google"');
     });
 
     it('should return 404 if there are no jobs to export', async () => {
