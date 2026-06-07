@@ -35,27 +35,6 @@ Trackra is an intelligent, full-stack job application tracking platform designed
 
 ---
 
-## ⚡ Challenges Faced & Solutions
-
-Building a robust platform that handles large amounts of user-generated data presents unique performance challenges. Here is how I addressed the most critical bottlenecks:
-
-### 1. Global Search Performance Optimization
-**Challenge:** As the database grew, the global search feature experienced significant latency, taking too much time (sometimes upwards of 10s on large datasets) to query across multiple joined tables (jobs, companies, contacts).
-**Solution:** 
-- **Database Indexing:** Implemented PostgreSQL `pg_trgm` GIN indexing for text columns to massively accelerate pattern matching.
-- **Query Optimization:** Normalized joined-table fields to avoid heavy `JOIN` operations during free-text searches.
-- **Result:** Reduced search API query latency from 10s down to **700ms - 1.5s**, ensuring a snappy user experience even with extensive job records.
-
-### 2. Home Page Loading Time
-**Challenge:** The initial load of the main dashboard was slow due to fetching the entire job history and rendering heavy DOM elements simultaneously.
-**Solution:**
-- **Data Pagination & Lazy Loading:** Implemented cursor-based pagination on the backend to only fetch the most recent/relevant jobs on initial load.
-- **React Optimizations:** Utilized React `Suspense` and `lazy()` for code-splitting routes and heavy components. 
-- **Caching:** Added lightweight caching for static metadata and user preferences.
-- **Result:** Drastically improved Time to First Byte (TTFB) and Largest Contentful Paint (LCP), making the application feel instantaneous upon login.
-
----
-
 ## 🛠️ Local Development & Setup
 
 ### Prerequisites
