@@ -59,13 +59,15 @@ const sendToGemini = async (jobDescriptionText: string): Promise<ExtractedJob> =
     const response = result.response;
     const responseText = response.text();
 
-    // Gemini sometimes wraps JSON in markdown code blocks despite our prompt.
-    // Strip ```json ... ``` if present.
-    const cleanedText = responseText
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim();
+    // Extract only the outermost JSON object by finding the first '{' and last '}'
+    const firstBrace = responseText.indexOf('{');
+    const lastBrace = responseText.lastIndexOf('}');
+
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+      throw new SyntaxError('No JSON object found in response');
+    }
+
+    const cleanedText = responseText.substring(firstBrace, lastBrace + 1).trim();
 
     // Parse the JSON response
     const parsed: unknown = JSON.parse(cleanedText);

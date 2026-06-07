@@ -121,6 +121,67 @@ describe('Extraction API', () => {
       expect(res.body.success).toBe(false);
       expect(res.body.message).toContain('AI returned invalid JSON');
     });
+
+    it('should successfully handle and parse Gemini output that has conversational wrappers and markdown blocks for a complex job description', async () => {
+      const complexJD = `Sr Node.js (Backend) Developer
+Mobile Programming
+2.9516 Reviews
+Company Logo
+2 - 5 years
+Not Disclosed
+Remote
+Hiring office located in Remote
+Job description:-What You ll Do Design and implement high performance scale able data-centric server-less microservices Estimate engineering effort, plan implementation...`;
+
+      const mockGeminiResponse = {
+        response: {
+          text: () =>
+            `Here is the extracted JSON for the Sr Node.js Backend Developer role:
+\`\`\`json
+{
+  "title": "Sr Node.js (Backend) Developer",
+  "company": "Mobile Programming",
+  "location": "Remote",
+  "salary": "Not Disclosed",
+  "url": "https://www.naukri.com/job-listings-sr-node-js-backend-developer-mobileprogramming-remote-2-to-5-years-250522501636",
+  "skills": ["Backend", "Software development", "NoSQL", "Agile", "Javascript", "MongoDB", "microservices"],
+  "fit": "STRONG",
+  "experience": "2 - 5 years"
+}
+\`\`\`
+Hope this helps!`,
+        },
+      };
+
+      const mockSavedJob = {
+        id: 'job-2',
+        title: 'Sr Node.js (Backend) Developer',
+        company: 'Mobile Programming',
+        location: 'Remote',
+        salary: 'Not Disclosed',
+        url: 'https://www.naukri.com/job-listings-sr-node-js-backend-developer-mobileprogramming-remote-2-to-5-years-250522501636',
+        skills: ["Backend", "Software development", "NoSQL", "Agile", "Javascript", "MongoDB", "microservices"],
+        fit: FitRating.STRONG,
+        status: JobStatus.NOT_APPLIED,
+        userId: mockUser.id,
+        rawJD: complexJD,
+        createdAt: new Date(),
+      };
+
+      mockGenerateContent.mockResolvedValueOnce(mockGeminiResponse);
+      mockJobCreate.mockResolvedValueOnce(mockSavedJob);
+
+      const res = await request(app)
+        .post('/api/extract/text')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: complexJD });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.id).toBe('job-2');
+      expect(res.body.data.title).toBe('Sr Node.js (Backend) Developer');
+      expect(mockGenerateContent).toHaveBeenCalled();
+    });
   });
 
   describe('POST /api/extract/url', () => {
