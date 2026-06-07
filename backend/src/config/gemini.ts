@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
  * Pro would be overkill (and slower) for this use case.
  */
 export const geminiModel = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
+  model: 'gemini-1.5-flash-latest',
   generationConfig: {
     temperature: 0.1, // Low temperature = more deterministic output
     maxOutputTokens: 1024, // JD extraction won't need more than this
