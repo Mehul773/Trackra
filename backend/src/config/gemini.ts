@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
 import { env } from './env';
 
 /**
  * Singleton Gemini AI client.
- * Creates the client once and exports a proxy model instance
- * that implements fallback mechanics to prevent rate limit/quota errors.
+ * Conditionally created based on API key availability.
  */
-const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+const genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 // Ordered fallback list of free-tier models. If one is rate-limited or exhausted, try the next.
 export const GEMINI_MODELS_FALLBACK = [
@@ -19,10 +19,43 @@ export const GEMINI_MODELS_FALLBACK = [
 
 export const geminiModel = {
   /**
-   * Generates content using the fallback list.
+   * Generates content using the configured provider (Gemini or Ollama).
    * Keeps the same method signature so that callers and unit test mocks remain unaffected.
    */
-  generateContent: async (promptArgs: any): Promise<any> => {
+  generateContent: async (promptArgs: [string, string]): Promise<any> => {
+    // 1. Route to Local Ollama if configured
+    if (env.AI_PROVIDER === 'ollama') {
+      console.log(`🤖 Routing to Local Ollama using model: ${env.OLLAMA_MODEL}`);
+      try {
+        const response = await axios.post(`${env.OLLAMA_HOST}/api/generate`, {
+          model: env.OLLAMA_MODEL,
+          prompt: `${promptArgs[0]}\n\n${promptArgs[1]}`,
+          stream: false,
+          format: 'json',
+          options: {
+            temperature: 0.1, // Ensure deterministic responses
+          }
+        });
+        
+        const responseText = response.data.response;
+        console.log(`✅ Extraction successful with Ollama`);
+        
+        return {
+          response: {
+            text: () => responseText
+          }
+        };
+      } catch (error: any) {
+        console.error(`❌ Local Ollama request failed: ${error.message}`);
+        throw new Error(`Ollama extraction failed: ${error.message}. Is Ollama running locally?`);
+      }
+    }
+
+    // 2. Default: Route to Gemini Cloud with Fallbacks
+    if (!genAI) {
+      throw new Error('GEMINI_API_KEY is not defined but AI_PROVIDER is set to gemini.');
+    }
+
     let lastError: any = null;
 
     for (const modelName of GEMINI_MODELS_FALLBACK) {
@@ -49,7 +82,7 @@ export const geminiModel = {
 };
 
 /**
- * The system prompt that instructs Gemini on how to parse job descriptions.
+ * The system prompt that instructs Gemini/Ollama on how to parse job descriptions.
  * Exported separately so it can be reused and tested.
  */
 export const JD_EXTRACTION_PROMPT = `You are a job description parser. Extract structured data and return ONLY valid JSON with no markdown, no explanation:

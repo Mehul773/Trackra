@@ -50,10 +50,23 @@ const envSchema = z.object({
 
   JWT_EXPIRES_IN: z.string().default('7d'),
 
-  // Gemini AI
-  GEMINI_API_KEY: z
-    .string()
-    .min(1, { message: 'GEMINI_API_KEY is required' }),
+  // AI Provider configuration
+  AI_PROVIDER: z.enum(['gemini', 'ollama']).default('gemini'),
+
+  // Gemini AI (optional if running Ollama locally)
+  GEMINI_API_KEY: z.string().optional(),
+
+  // Ollama Configuration
+  OLLAMA_HOST: z.string().url().default('http://localhost:11434'),
+  OLLAMA_MODEL: z.string().default('gemma2:2b'), // Gemma 2 2B is extremely fast and lightweight for local CPUs
+}).refine((data) => {
+  if (data.AI_PROVIDER === 'gemini' && !data.GEMINI_API_KEY) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'GEMINI_API_KEY is required when AI_PROVIDER is set to gemini',
+  path: ['GEMINI_API_KEY'],
 });
 
 /**
