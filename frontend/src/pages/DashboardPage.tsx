@@ -7,6 +7,8 @@ import { ExtractModal } from '../components/ExtractModal';
 import { JobDetailModal } from '../components/JobDetailModal';
 import { Job } from '../types';
 import { Loader } from 'lucide-react';
+import { getJobById } from '../services/jobs.service';
+
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -41,14 +43,30 @@ export const DashboardPage: React.FC = () => {
     fetchJobs();
   }, [fetchJobs]);
 
-  const handleEditJobClick = (job: Job) => {
+  const handleEditJobClick = async (job: Job) => {
+    // Open immediately with existing basic info
     setJobToEdit(job);
     setIsManualModalOpen(true);
+    try {
+      const fullJob = await getJobById(job.id);
+      // Pre-populate with notes once loaded
+      setJobToEdit(fullJob);
+    } catch (err) {
+      console.error('Failed to load full job details for edit', err);
+    }
   };
 
-  const handleViewJobClick = (job: Job) => {
+  const handleViewJobClick = async (job: Job) => {
+    // Open immediately with existing basic info
     setJobToView(job);
     setIsDetailModalOpen(true);
+    try {
+      const fullJob = await getJobById(job.id);
+      // Show description and notes once loaded
+      setJobToView(fullJob);
+    } catch (err) {
+      console.error('Failed to load full job details for view', err);
+    }
   };
 
   const handleCloseManualModal = () => {

@@ -26,9 +26,30 @@ export const getAllJobs = async (
 
   return prisma.job.findMany({
     where,
-    include: { contacts: true },
+    select: {
+      id: true,
+      title: true,
+      company: true,
+      location: true,
+      salary: true,
+      url: true,
+      skills: true,
+      fit: true,
+      status: true,
+      appliedOn: true,
+      createdAt: true,
+      contacts: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+        }
+      }
+    },
     orderBy: { createdAt: 'desc' },
-  });
+  }) as any;
 };
 
 /**

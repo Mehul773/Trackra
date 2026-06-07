@@ -64,7 +64,28 @@ describe('Jobs API (CRUD)', () => {
       expect(res.body.data).toHaveLength(2);
       expect(mockJobFindMany).toHaveBeenCalledWith({
         where: { userId: mockUser.id },
-        include: { contacts: true },
+        select: {
+          id: true,
+          title: true,
+          company: true,
+          location: true,
+          salary: true,
+          url: true,
+          skills: true,
+          fit: true,
+          status: true,
+          appliedOn: true,
+          createdAt: true,
+          contacts: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              role: true,
+            }
+          }
+        },
         orderBy: { createdAt: 'desc' },
       });
     });
@@ -79,7 +100,28 @@ describe('Jobs API (CRUD)', () => {
       expect(res.status).toBe(200);
       expect(mockJobFindMany).toHaveBeenCalledWith({
         where: { userId: mockUser.id, status: JobStatus.APPLIED },
-        include: { contacts: true },
+        select: {
+          id: true,
+          title: true,
+          company: true,
+          location: true,
+          salary: true,
+          url: true,
+          skills: true,
+          fit: true,
+          status: true,
+          appliedOn: true,
+          createdAt: true,
+          contacts: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              role: true,
+            }
+          }
+        },
         orderBy: { createdAt: 'desc' },
       });
     });
