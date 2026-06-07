@@ -35,9 +35,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.21.0",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
+    "zod": "^4.4.3",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -56,6 +54,7 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
   },
+  "devDependencies": {},
   "prisma": {
     "seed": "ts-node src/prisma/seed.ts"
   }
