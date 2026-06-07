@@ -77,3 +77,23 @@ export const logout = asyncHandler(
       .json(ApiResponse.ok(null, 'Logged out successfully'));
   }
 );
+
+/**
+ * GET /api/auth/bypass-login
+ * Creates/Finds a mock user and generates a token, then redirects to the frontend callback.
+ * Enabled only in non-production environments.
+ */
+export const bypassLogin = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const user = await authService.findOrCreateUser({
+      googleId: 'mock-test-id',
+      email: 'test-user@example.com',
+      name: 'Mock Test User',
+      avatar: 'https://lh3.googleusercontent.com/a/mock-avatar',
+    });
+
+    const token = authService.generateToken(user);
+    res.redirect(`${env.FRONTEND_URL}/auth/callback?token=${token}`);
+  }
+);
+

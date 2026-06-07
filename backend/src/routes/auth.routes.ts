@@ -46,4 +46,9 @@ router.get('/me', authenticate, authController.getMe);
  */
 router.post('/logout', authenticate, authController.logout);
 
+// Bypass login helper for local/CI test automation (disabled in production)
+if (process.env['NODE_ENV'] !== 'production') {
+  router.get('/bypass-login', authController.bypassLogin);
+}
+
 export default router;

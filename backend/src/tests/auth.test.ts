@@ -5,6 +5,7 @@ import { signToken } from '../utils/jwt';
 
 // Cast prisma mocked methods so TypeScript knows they are jest mocks
 const mockUserFindUnique = prisma.user.findUnique as jest.Mock;
+const mockUserUpsert = prisma.user.upsert as jest.Mock;
 
 describe('Authentication API & Middleware', () => {
   beforeEach(() => {
@@ -107,4 +108,39 @@ describe('Authentication API & Middleware', () => {
       expect(res.body.message).toBe('Logged out successfully');
     });
   });
+
+  describe('GET /api/auth/bypass-login', () => {
+    it('should create/find a mock user, generate a token, and redirect to the frontend callback', async () => {
+      const mockUser = {
+        id: 'mock-user-id',
+        googleId: 'mock-test-id',
+        email: 'test-user@example.com',
+        name: 'Mock Test User',
+        avatar: 'https://lh3.googleusercontent.com/a/mock-avatar',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockUserUpsert.mockResolvedValueOnce(mockUser);
+
+      const res = await request(app).get('/api/auth/bypass-login');
+
+      expect(res.status).toBe(302);
+      expect(res.header.location).toContain('http://localhost:5173/auth/callback?token=');
+      expect(mockUserUpsert).toHaveBeenCalledWith({
+        where: { googleId: 'mock-test-id' },
+        update: {
+          name: 'Mock Test User',
+          avatar: 'https://lh3.googleusercontent.com/a/mock-avatar',
+        },
+        create: {
+          googleId: 'mock-test-id',
+          email: 'test-user@example.com',
+          name: 'Mock Test User',
+          avatar: 'https://lh3.googleusercontent.com/a/mock-avatar',
+        },
+      });
+    });
+  });
 });
+

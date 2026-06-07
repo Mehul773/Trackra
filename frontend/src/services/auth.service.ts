@@ -24,6 +24,16 @@ export const loginWithGoogle = (): void => {
 };
 
 /**
+ * Trigger Bypass Login redirection.
+ * Navigates directly to the backend mock/bypass auth URL.
+ */
+export const loginWithBypass = (): void => {
+  const apiBase = (import.meta.env['VITE_API_URL'] as string) || 'http://localhost:3000/api';
+  window.location.href = `${apiBase}/auth/bypass-login`;
+};
+
+
+/**
  * Log out from the application by calling backend (for completeness)
  * and clearing the local state.
  */
