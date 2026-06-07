@@ -1,0 +1,2 @@
+# Ignore frontend directory changes to prevent unnecessary backend builds on Koyeb
+frontend/

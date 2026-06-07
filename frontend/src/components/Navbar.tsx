@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Briefcase, Sparkles, Download, Search, X, ExternalLink, Menu } from 'lucide-react';
+import { LogOut, Briefcase, Sparkles, Download, Search, X, ExternalLink, MoreVertical, Plus } from 'lucide-react';
 
 interface NavbarProps {
   onAddManual: () => void;
@@ -110,28 +110,30 @@ export const Navbar: React.FC<NavbarProps> = ({
           </select>
         </div>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile Hamburger / Three Dots */}
         <button
           className="nav-hamburger"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           title="Toggle menu"
         >
-          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          {mobileMenuOpen ? <X size={22} /> : <MoreVertical size={22} />}
         </button>
 
         {/* Action Controls */}
         <div className={`nav-actions${mobileMenuOpen ? ' nav-actions--open' : ''}`}>
-          <button onClick={onOpenExtract} className="btn btn-primary btn-sparkle">
+          <button onClick={() => { onOpenExtract(); setMobileMenuOpen(false); }} className="btn btn-primary btn-sparkle">
             <Sparkles size={16} />
             <span>AI Quick Add</span>
           </button>
           
-          <button onClick={onAddManual} className="btn btn-secondary">
+          <button onClick={() => { onAddManual(); setMobileMenuOpen(false); }} className="btn btn-secondary">
+            <Plus size={16} />
             <span>Add Manually</span>
           </button>
 
-          <button onClick={onDownloadCsv} className="btn btn-icon" title="Export pipeline to CSV">
+          <button onClick={() => { onDownloadCsv(); setMobileMenuOpen(false); }} className="btn btn-icon" title="Export pipeline to CSV">
             <Download size={18} />
+            <span className="nav-action-text">Export to CSV</span>
           </button>
 
           {/* Portfolio Link */}
@@ -141,8 +143,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             rel="noopener noreferrer"
             className="btn btn-icon portfolio-link"
             title="Developer Portfolio"
+            onClick={() => setMobileMenuOpen(false)}
           >
             <ExternalLink size={18} />
+            <span className="nav-action-text">Developer Portfolio</span>
           </a>
 
           {/* User Profile & Logout */}
@@ -155,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
               <span className="user-name">{user.name}</span>
               
-              <button onClick={logout} className="btn-logout" title="Sign Out">
+              <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="btn-logout" title="Sign Out">
                 <LogOut size={16} />
               </button>
             </div>
