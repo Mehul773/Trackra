@@ -143,9 +143,37 @@ export const deleteJob = async (
  * Get all jobs for CSV export.
  * Same as getAllJobs but without status filter — exports everything.
  */
-export const getJobsForExport = async (userId: string): Promise<(Job & { contacts: Contact[] })[]> => {
+export const getJobsForExport = async (
+  userId: string,
+  search?: string
+): Promise<(Job & { contacts: Contact[] })[]> => {
+  const where: Prisma.JobWhereInput = { userId };
+
+  if (search && search.trim()) {
+    const query = search.trim();
+    where.OR = [
+      { title: { contains: query, mode: 'insensitive' } },
+      { company: { contains: query, mode: 'insensitive' } },
+      { location: { contains: query, mode: 'insensitive' } },
+      { salary: { contains: query, mode: 'insensitive' } },
+      { briefJD: { contains: query, mode: 'insensitive' } },
+      {
+        contacts: {
+          some: {
+            OR: [
+              { name: { contains: query, mode: 'insensitive' } },
+              { email: { contains: query, mode: 'insensitive' } },
+              { phone: { contains: query, mode: 'insensitive' } },
+              { role: { contains: query, mode: 'insensitive' } },
+            ],
+          },
+        },
+      },
+    ];
+  }
+
   return prisma.job.findMany({
-    where: { userId },
+    where,
     include: { contacts: true },
     orderBy: { createdAt: 'desc' },
   });

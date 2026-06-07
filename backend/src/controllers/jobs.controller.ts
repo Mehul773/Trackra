@@ -122,8 +122,12 @@ export const deleteJob = asyncHandler(
 export const exportCsv = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!.id;
+    const { search } = req.query;
 
-    const jobs = await jobsService.getJobsForExport(userId);
+    const jobs = await jobsService.getJobsForExport(
+      userId,
+      typeof search === 'string' ? search : undefined
+    );
 
     if (jobs.length === 0) {
       throw ApiError.notFound('No jobs to export');

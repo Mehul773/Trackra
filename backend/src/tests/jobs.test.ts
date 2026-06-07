@@ -289,6 +289,62 @@ describe('Jobs API (CRUD)', () => {
       expect(res.text).toContain('"Software Engineer","Google"');
     });
 
+    it('should pass search filter to service and database when query parameter is provided', async () => {
+      const mockJobs = [
+        {
+          id: 'job-1',
+          title: 'Software Engineer',
+          company: 'Google',
+          status: JobStatus.APPLIED,
+          fit: FitRating.STRONG,
+          skills: ['JS', 'TS'],
+          location: 'NY',
+          salary: '$150k',
+          url: 'http://google.com',
+          notes: 'nice role',
+          appliedOn: new Date(),
+          interviewOn: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: mockUser.id,
+        },
+      ];
+
+      mockJobFindMany.mockResolvedValueOnce(mockJobs);
+
+      const res = await request(app)
+        .get('/api/jobs/export/csv?search=Google')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(mockJobFindMany).toHaveBeenCalledWith({
+        where: {
+          userId: mockUser.id,
+          OR: [
+            { title: { contains: 'Google', mode: 'insensitive' } },
+            { company: { contains: 'Google', mode: 'insensitive' } },
+            { location: { contains: 'Google', mode: 'insensitive' } },
+            { salary: { contains: 'Google', mode: 'insensitive' } },
+            { briefJD: { contains: 'Google', mode: 'insensitive' } },
+            {
+              contacts: {
+                some: {
+                  OR: [
+                    { name: { contains: 'Google', mode: 'insensitive' } },
+                    { email: { contains: 'Google', mode: 'insensitive' } },
+                    { phone: { contains: 'Google', mode: 'insensitive' } },
+                    { role: { contains: 'Google', mode: 'insensitive' } },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        include: { contacts: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    });
+
     it('should return 404 if there are no jobs to export', async () => {
       mockJobFindMany.mockResolvedValueOnce([]);
 
