@@ -1,0 +1,79 @@
+// Prisma Schema — The single source of truth for your database.
+// Run `npx prisma migrate dev` to create/update tables from this file.
+// Run `npx prisma generate` to regenerate the TypeScript client.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────
+// Enums (stored as PostgreSQL enums in the database)
+// ──────────────────────────────────────────────────────────────
+
+enum JobStatus {
+  NOT_APPLIED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+enum FitRating {
+  STRONG
+  STRETCH
+  WEAK
+}
+
+// ──────────────────────────────────────────────────────────────
+// Models
+// ──────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  googleId  String   @unique
+  email     String   @unique
+  name      String
+  avatar    String?
+
+  // Relations
+  jobs      Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users") // Table name in PostgreSQL (lowercase, plural)
+}
+
+model Job {
+  id          String     @id @default(cuid())
+  title       String
+  company     String
+  location    String?
+  salary      String?
+  url         String?
+  sourceUrl   String?    // The original URL that was scraped
+  skills      String[]   // PostgreSQL array type
+  fit         FitRating?
+  status      JobStatus  @default(NOT_APPLIED)
+  notes       String?
+  rawJD       String?    // The raw job description text (for reference)
+  appliedOn   DateTime?
+  interviewOn DateTime?
+
+  // Foreign key to User — cascade delete means deleting a user
+  // automatically deletes all their jobs too
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Index on userId for fast lookups — every query filters by user
+  @@index([userId])
+  @@map("jobs")
+}
