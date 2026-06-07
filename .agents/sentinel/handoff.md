@@ -1,26 +1,28 @@
 # Handoff Report
 
 ## Observation
-The user has requested enhancements to the Trackra job application pipeline, specifying requirements R1 through R7. 
-We have:
-1. Created `ORIGINAL_REQUEST.md` at the workspace root to preserve user intent.
-2. Created `.agents/original_prompt.md` to log original prompts.
-3. Created our sentinel `BRIEFING.md` inside `.agents/sentinel/`.
-4. Spawend the first Orchestrator instance, which successfully coordinated Milestone 1 before crashing due to model reachability issues.
-5. Re-spawned a fresh Orchestrator subagent (`aa5ca796-78a4-49c8-8cbe-4153e0f2b3f4`) pointed to the existing workspace and configuration files to pick up progress.
-6. Configured two crons for progress reporting (every 8 minutes) and liveness checking (every 10 minutes).
+- The user submitted a new follow-up request detailing requirements R1 through R5:
+  - R1: Resilient AI JSON Extraction in backend.
+  - R2: "Recently Added" job indicator (green 'New' badge + glowing green border) that fades/dismisses in 1 minute.
+  - R3: Date Filter Dropdown (All Time, Today, This Week, This Month).
+  - R4: Scoped categories for global search.
+  - R5: Typo-tolerant fuzzy search in `useJobs.ts`.
+- We recorded the new request in both `ORIGINAL_REQUEST.md` and `.agents/original_prompt.md` with timestamp `2026-06-07T12:20:27Z`.
+- We updated `BRIEFING.md` to reflect the new user context and reset the victory audit status.
+- We spawned a fresh Orchestrator subagent (`03945a19-af76-48ca-8b7a-6610cd278e79`) under directory `.agents/orchestrator_m2/` and pointed it to the new requirements in `ORIGINAL_REQUEST.md`.
+- We registered two crons (Progress Reporting every 8 minutes, Liveness Check every 10 minutes).
 
 ## Logic Chain
-- As a Sentinel, we must not make technical decisions.
-- When a subagent fails or stops due to system errors, we must re-spawn it using the existing workspace configurations.
-- The two crons ensure that we report progress and reactively manage the orchestrator's health.
-- Having a Victory Auditor is the final block before completing the task.
+- A fresh Orchestrator was spawned as the previous subagent has been retired, satisfying the "no reuse after handoff" iron rule.
+- Running the two monitoring crons ensures that we keep the user updated and check if the orchestrator remains healthy.
+- We remain in the monitoring phase, waiting for either cron triggers, messages from the Orchestrator, or a victory claim.
 
 ## Caveats
-- The new Orchestrator needs to parse the old state and files. It should continue seamlessly as Milestone 1 is completely verified.
+- The Orchestrator will need to implement frontend and backend changes. We must ensure it correctly creates unit tests and verifies using `npm run build`.
 
 ## Conclusion
-The orchestration phase has been successfully restarted. The Sentinel is monitoring the new instance.
+- The new Orchestrator (`03945a19-af76-48ca-8b7a-6610cd278e79`) is successfully launched and is working on Milestone 2.
+- The Sentinel is idle and waiting for notifications.
 
 ## Verification Method
-- Validate subagent logs and wait for cron outputs.
+- Monitor cron executions and check for the Orchestrator's progress report or completion message.

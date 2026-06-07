@@ -106,10 +106,123 @@ describe('Extraction API', () => {
       });
     });
 
+    it('should resiliently parse JSON with trailing commas', async () => {
+      const mockGeminiResponse = {
+        response: {
+          text: () =>
+            `{
+              "title": "Senior Developer",
+              "company": "Trackra Corp",
+              "skills": ["TypeScript", "Node.js",],
+              "fit": "STRONG",
+            }`,
+        },
+      };
+
+      const mockSavedJob = {
+        id: 'job-1',
+        title: 'Senior Developer',
+        company: 'Trackra Corp',
+        skills: ['TypeScript', 'Node.js'],
+        fit: FitRating.STRONG,
+        userId: mockUser.id,
+        createdAt: new Date(),
+      };
+
+      mockGenerateContent.mockResolvedValueOnce(mockGeminiResponse);
+      mockJobCreate.mockResolvedValueOnce(mockSavedJob);
+
+      const res = await request(app)
+        .post('/api/extract/text')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: validText });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.title).toBe('Senior Developer');
+    });
+
+    it('should resiliently parse JSON with unescaped newlines in string fields', async () => {
+      const mockGeminiResponse = {
+        response: {
+          text: () =>
+            `{
+              "title": "Backend Dev",
+              "company": "Trackra Corp",
+              "skills": ["Go", "Docker"],
+              "briefJD": "First line of brief description.
+              Second line of brief description.",
+              "fit": "STRETCH"
+            }`,
+        },
+      };
+
+      const mockSavedJob = {
+        id: 'job-1',
+        title: 'Backend Dev',
+        company: 'Trackra Corp',
+        skills: ['Go', 'Docker'],
+        fit: FitRating.STRETCH,
+        briefJD: 'First line of brief description.\n              Second line of brief description.',
+        userId: mockUser.id,
+        createdAt: new Date(),
+      };
+
+      mockGenerateContent.mockResolvedValueOnce(mockGeminiResponse);
+      mockJobCreate.mockResolvedValueOnce(mockSavedJob);
+
+      const res = await request(app)
+        .post('/api/extract/text')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: validText });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.title).toBe('Backend Dev');
+    });
+
+    it('should fall back to regex parsing for highly malformed JSON response', async () => {
+      const mockGeminiResponse = {
+        response: {
+          text: () =>
+            `Here is the extraction:
+            "title": "Lead Architect"
+            "company": "Tech Giants"
+            "location": "San Francisco, CA"
+            "skills": ["React", "Node", "AWS"]
+            "fit": "STRONG"
+            "experience": "8+ years"`,
+        },
+      };
+
+      const mockSavedJob = {
+        id: 'job-1',
+        title: 'Lead Architect',
+        company: 'Tech Giants',
+        location: 'San Francisco, CA',
+        skills: ['React', 'Node', 'AWS'],
+        fit: FitRating.STRONG,
+        userId: mockUser.id,
+        createdAt: new Date(),
+      };
+
+      mockGenerateContent.mockResolvedValueOnce(mockGeminiResponse);
+      mockJobCreate.mockResolvedValueOnce(mockSavedJob);
+
+      const res = await request(app)
+        .post('/api/extract/text')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ text: validText });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.title).toBe('Lead Architect');
+    });
+
     it('should handle invalid JSON from Gemini gracefully and return 500', async () => {
       const mockGeminiResponse = {
         response: {
-          text: () => 'This is not JSON text',
+          text: () => 'This is not JSON text and has no braces at all.',
         },
       };
 

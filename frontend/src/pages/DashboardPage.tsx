@@ -15,6 +15,10 @@ export const DashboardPage: React.FC = () => {
     error,
     searchQuery,
     setSearchQuery,
+    searchCategory,
+    setSearchCategory,
+    dateFilter,
+    setDateFilter,
     fetchJobs,
     addJob,
     updateJobDetail,
@@ -86,6 +90,10 @@ export const DashboardPage: React.FC = () => {
         onDownloadCsv={downloadCsv}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        searchCategory={searchCategory}
+        onCategoryChange={setSearchCategory}
+        dateFilter={dateFilter}
+        onDateFilterChange={setDateFilter}
       />
 
       {/* Main Board View */}

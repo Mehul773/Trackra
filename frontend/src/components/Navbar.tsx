@@ -8,6 +8,10 @@ interface NavbarProps {
   onDownloadCsv: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  searchCategory: string;
+  onCategoryChange: (category: string) => void;
+  dateFilter: string;
+  onDateFilterChange: (filter: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +20,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onDownloadCsv,
   searchQuery,
   onSearchChange,
+  searchCategory,
+  onCategoryChange,
+  dateFilter,
+  onDateFilterChange,
 }) => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,25 +39,53 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="brand-name">Trackra</span>
         </div>
 
-        {/* Global Search Bar (center) */}
-        <div className="nav-search">
-          <Search size={16} className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search jobs, companies, contacts..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-          {searchQuery && (
-            <button
-              className="search-clear"
-              onClick={() => onSearchChange('')}
-              title="Clear search"
-            >
-              <X size={14} />
-            </button>
-          )}
+        {/* Global Search Bar & Filters */}
+        <div className="nav-search-container">
+          <div className="nav-search">
+            <Search size={16} className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                className="search-clear"
+                onClick={() => onSearchChange('')}
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <select
+            className="search-category-select"
+            value={searchCategory}
+            onChange={(e) => onCategoryChange(e.target.value)}
+            title="Search field category"
+          >
+            <option value="all">All Fields</option>
+            <option value="title">Job Title</option>
+            <option value="company">Company</option>
+            <option value="location">Location</option>
+            <option value="salary">Salary</option>
+            <option value="contacts">Contacts</option>
+          </select>
+
+          <select
+            className="date-filter-select"
+            value={dateFilter}
+            onChange={(e) => onDateFilterChange(e.target.value)}
+            title="Filter by creation date"
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
         </div>
 
         {/* Mobile Hamburger */}

@@ -11,6 +11,30 @@ interface JobCardProps {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete, onClick, isDragging }) => {
+  const [isRecent, setIsRecent] = React.useState(() => {
+    const createdTime = new Date(job.createdAt).getTime();
+    return Date.now() - createdTime < 60000;
+  });
+
+  React.useEffect(() => {
+    if (!isRecent) return;
+    const createdTime = new Date(job.createdAt).getTime();
+    const remaining = 60000 - (Date.now() - createdTime);
+    if (remaining <= 0) {
+      setIsRecent(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsRecent(false);
+    }, remaining);
+    return () => clearTimeout(timer);
+  }, [job.createdAt, isRecent]);
+
+  const handleCardClick = () => {
+    setIsRecent(false);
+    onClick(job);
+  };
+
   const getFitLabel = (fit: FitRating | null) => {
     switch (fit) {
       case FitRating.STRONG:
@@ -38,17 +62,18 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onEdit, onDelete, onClick
 
   return (
     <div
-      className={`job-card animate-fade-in${isDragging ? ' job-card--dragging' : ''}`}
-      onClick={() => onClick(job)}
+      className={`job-card animate-fade-in${isDragging ? ' job-card--dragging' : ''}${isRecent ? ' job-card--recent' : ''}`}
+      onClick={handleCardClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') onClick(job); }}
+      onKeyDown={(e) => { if (e.key === 'Enter') handleCardClick(); }}
     >
       {/* Header */}
       <div className="card-header">
         <div className="card-brand">
           <h4 className="job-title" title={job.title}>
             {job.title}
+            {isRecent && <span className="new-badge">New</span>}
           </h4>
           <span className="company-name">{job.company}</span>
         </div>

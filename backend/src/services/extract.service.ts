@@ -46,10 +46,95 @@ export const extractFromText = async (text: string): Promise<ExtractedJob> => {
 };
 
 /**
- * Internal: Send job description text to Gemini and parse the response.
- * This is the core AI logic.
+ * Pre-processes raw AI JSON response text to clean up markdown blocks,
+ * trailing commas, and unescaped newlines/control characters.
  */
+export const cleanJsonString = (str: string): string => {
+  // Strip markdown fences if present
+  str = str.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  
+  const start = str.indexOf('{');
+  const end = str.lastIndexOf('}');
+  if (start === -1 || end === -1 || end < start) {
+    return str;
+  }
+  
+  const clean = str.substring(start, end + 1);
+  
+  // Character-by-character scanner to escape newlines inside double quotes
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  
+  for (let i = 0; i < clean.length; i++) {
+    const char = clean[i]!;
+    if (char === '"' && !escaped) {
+      inString = !inString;
+      result += char;
+    } else if (inString) {
+      if (char === '\n') {
+        result += '\\n';
+      } else if (char === '\r') {
+        result += '\\r';
+      } else if (char === '\t') {
+        result += '\\t';
+      } else if (char === '\\' && !escaped) {
+        escaped = true;
+        result += char;
+      } else {
+        escaped = false;
+        result += char;
+      }
+    } else {
+      result += char;
+    }
+  }
+
+  // Remove trailing commas in objects and arrays before closed braces
+  result = result.replace(/,\s*([}\]])/g, '$1');
+  
+  return result;
+};
+
+/**
+ * Regex-based fallback parser to extract fields manually if JSON.parse fails.
+ */
+export const regexFallbackParse = (str: string): any => {
+  const getField = (field: string): string | null => {
+    // Match double quoted, single quoted, or unquoted values
+    const regex = new RegExp(`"${field}"\\s*:\\s*(?:"([^"]*)"|'([^']*)'|([^,}\\n]+))`, 'i');
+    const match = str.match(regex);
+    if (!match) return null;
+    const val = (match[1] || match[2] || match[3] || '').trim();
+    if (val === 'null' || val === 'undefined') return null;
+    return val.replace(/^["']|["']$/g, '');
+  };
+
+  const getSkills = (): string[] => {
+    const regex = /"skills"\s*:\s*\[([^\]]*)\]/i;
+    const match = str.match(regex);
+    if (!match) return [];
+    return match[1]!
+      .split(',')
+      .map((s) => s.trim().replace(/^["']|["']$/g, ''))
+      .filter((s) => s.length > 0);
+  };
+
+  const title = getField('title') || 'Untitled Position';
+  const company = getField('company') || 'Unknown Company';
+  const location = getField('location');
+  const salary = getField('salary');
+  const url = getField('url');
+  const skills = getSkills();
+  const fit = getField('fit');
+  const experience = getField('experience');
+  const briefJD = getField('briefJD');
+
+  return { title, company, location, salary, url, skills, fit, experience, briefJD };
+};
+
 const sendToGemini = async (jobDescriptionText: string): Promise<ExtractedJob> => {
+  let responseText = '';
   try {
     const result = await geminiModel.generateContent([
       JD_EXTRACTION_PROMPT,
@@ -57,22 +142,26 @@ const sendToGemini = async (jobDescriptionText: string): Promise<ExtractedJob> =
     ]);
 
     const response = result.response;
-    const responseText = response.text();
+    responseText = response.text();
 
-    // Extract only the outermost JSON object by finding the first '{' and last '}'
     const firstBrace = responseText.indexOf('{');
-    const lastBrace = responseText.lastIndexOf('}');
+    let parsed: any;
 
-    if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-      throw new SyntaxError('No JSON object found in response');
+    if (firstBrace === -1) {
+      parsed = regexFallbackParse(responseText);
+      if (parsed.title === 'Untitled Position' && parsed.company === 'Unknown Company') {
+        throw new SyntaxError('No JSON object found in response');
+      }
+    } else {
+      const cleanedText = cleanJsonString(responseText);
+      try {
+        parsed = JSON.parse(cleanedText);
+      } catch (parseError) {
+        console.warn('⚠️ JSON.parse failed, attempting regex fallback parsing:', parseError);
+        parsed = regexFallbackParse(responseText);
+      }
     }
 
-    const cleanedText = responseText.substring(firstBrace, lastBrace + 1).trim();
-
-    // Parse the JSON response
-    const parsed: unknown = JSON.parse(cleanedText);
-
-    // Validate the parsed data has the expected shape
     return validateExtraction(parsed);
   } catch (error) {
     if (error instanceof ApiError) {

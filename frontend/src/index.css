@@ -1430,3 +1430,91 @@ button, input, textarea, select {
     margin: 0;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   New Enhancements: Recently Added Indicators, Search Filters
+   ────────────────────────────────────────────────────────────── */
+.nav-search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 680px;
+  margin: 0 1.5rem;
+}
+
+.search-category-select,
+.date-filter-select {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text-headers);
+  font-size: 0.8rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-full);
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.search-category-select:hover,
+.date-filter-select:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.search-category-select:focus,
+.date-filter-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.new-badge {
+  background-color: var(--color-offer, #10b981);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  display: inline-block;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+}
+
+.job-card--recent {
+  border: 1px solid var(--color-offer, #10b981) !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3) !important;
+  animation: recent-card-glow 1.5s infinite alternate;
+}
+
+@keyframes recent-card-glow {
+  from {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+  }
+  to {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-search-container {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
+    margin: 0.5rem 0 0;
+    flex-wrap: wrap;
+  }
+  .nav-search {
+    margin: 0 !important;
+    flex: 1 1 100%;
+  }
+  .search-category-select,
+  .date-filter-select {
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.5rem;
+    text-align: center;
+  }
+}

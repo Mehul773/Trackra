@@ -67,8 +67,13 @@ export const extractFromUrl = async (url: string): Promise<Job> => {
  * Accepts an optional search query to export only filtered results.
  * Creates an invisible link to trigger browser download with correct headers.
  */
-export const downloadCsv = async (searchQuery?: string): Promise<void> => {
-  const params = searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : '';
+export const downloadCsv = async (searchQuery?: string, category?: string, dateFilter?: string): Promise<void> => {
+  const urlParams = new URLSearchParams();
+  if (searchQuery) urlParams.append('search', searchQuery);
+  if (category) urlParams.append('category', category);
+  if (dateFilter) urlParams.append('dateFilter', dateFilter);
+
+  const params = urlParams.toString() ? `?${urlParams.toString()}` : '';
   const response = await api.get(`/jobs/export/csv${params}`, { responseType: 'blob' });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');

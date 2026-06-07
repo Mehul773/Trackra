@@ -145,31 +145,70 @@ export const deleteJob = async (
  */
 export const getJobsForExport = async (
   userId: string,
-  search?: string
+  search?: string,
+  category?: string,
+  dateFilter?: string
 ): Promise<(Job & { contacts: Contact[] })[]> => {
   const where: Prisma.JobWhereInput = { userId };
 
+  // 1. Filter by Date
+  if (dateFilter && dateFilter !== 'all') {
+    const now = new Date();
+    if (dateFilter === 'today') {
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      where.createdAt = { gte: todayStart };
+    } else if (dateFilter === 'week') {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: sevenDaysAgo };
+    } else if (dateFilter === 'month') {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: thirtyDaysAgo };
+    }
+  }
+
+  // 2. Filter by Scoped Search Query
   if (search && search.trim()) {
     const query = search.trim();
-    where.OR = [
-      { title: { contains: query, mode: 'insensitive' } },
-      { company: { contains: query, mode: 'insensitive' } },
-      { location: { contains: query, mode: 'insensitive' } },
-      { salary: { contains: query, mode: 'insensitive' } },
-      { briefJD: { contains: query, mode: 'insensitive' } },
-      {
-        contacts: {
-          some: {
-            OR: [
-              { name: { contains: query, mode: 'insensitive' } },
-              { email: { contains: query, mode: 'insensitive' } },
-              { phone: { contains: query, mode: 'insensitive' } },
-              { role: { contains: query, mode: 'insensitive' } },
-            ],
-          },
+    const cat = category || 'all';
+
+    const titleCond = { title: { contains: query, mode: 'insensitive' } as Prisma.StringFilter };
+    const companyCond = { company: { contains: query, mode: 'insensitive' } as Prisma.StringFilter };
+    const locationCond = { location: { contains: query, mode: 'insensitive' } as Prisma.StringNullableFilter };
+    const salaryCond = { salary: { contains: query, mode: 'insensitive' } as Prisma.StringNullableFilter };
+    const briefJdCond = { briefJD: { contains: query, mode: 'insensitive' } as Prisma.StringNullableFilter };
+    const contactsCond = {
+      contacts: {
+        some: {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } },
+            { phone: { contains: query, mode: 'insensitive' } },
+            { role: { contains: query, mode: 'insensitive' } },
+          ],
         },
       },
-    ];
+    };
+
+    if (cat === 'title') {
+      where.title = titleCond.title;
+    } else if (cat === 'company') {
+      where.company = companyCond.company;
+    } else if (cat === 'location') {
+      where.location = locationCond.location;
+    } else if (cat === 'salary') {
+      where.salary = salaryCond.salary;
+    } else if (cat === 'contacts') {
+      where.contacts = contactsCond.contacts;
+    } else {
+      where.OR = [
+        titleCond,
+        companyCond,
+        locationCond,
+        salaryCond,
+        briefJdCond,
+        contactsCond,
+      ];
+    }
   }
 
   return prisma.job.findMany({
