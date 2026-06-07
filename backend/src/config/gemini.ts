@@ -3,23 +3,50 @@ import { env } from './env';
 
 /**
  * Singleton Gemini AI client.
- * Creates the client once and exports the model instance
- * that all extraction calls will use.
+ * Creates the client once and exports a proxy model instance
+ * that implements fallback mechanics to prevent rate limit/quota errors.
  */
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
-/**
- * Using Gemini 1.5 Flash — fast, cheap, and good enough for
- * structured data extraction from job descriptions.
- * Pro would be overkill (and slower) for this use case.
- */
-export const geminiModel = genAI.getGenerativeModel({
-  model: 'gemini-2.0-flash',
-  generationConfig: {
-    temperature: 0.1, // Low temperature = more deterministic output
-    maxOutputTokens: 1024, // JD extraction won't need more than this
-  },
-});
+// Ordered fallback list of free-tier models. If one is rate-limited or exhausted, try the next.
+export const GEMINI_MODELS_FALLBACK = [
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite'
+];
+
+export const geminiModel = {
+  /**
+   * Generates content using the fallback list.
+   * Keeps the same method signature so that callers and unit test mocks remain unaffected.
+   */
+  generateContent: async (promptArgs: any): Promise<any> => {
+    let lastError: any = null;
+
+    for (const modelName of GEMINI_MODELS_FALLBACK) {
+      try {
+        console.log(`🤖 Attempting Gemini extraction using model: ${modelName}`);
+        const modelInstance = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            temperature: 0.1, // Low temperature = more deterministic output
+            maxOutputTokens: 1024, // JD extraction won't need more than this
+          },
+        });
+        const result = await modelInstance.generateContent(promptArgs);
+        console.log(`✅ Extraction successful with model: ${modelName}`);
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        console.warn(`⚠️ Model ${modelName} failed: ${error.message}. Trying next fallback...`);
+      }
+    }
+
+    throw lastError || new Error('All Gemini fallback models failed.');
+  }
+};
 
 /**
  * The system prompt that instructs Gemini on how to parse job descriptions.
