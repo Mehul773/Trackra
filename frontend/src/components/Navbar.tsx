@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Briefcase, Sparkles, Download, Search, X, ExternalLink, Menu } from 'lucide-react';
 
@@ -27,6 +27,27 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [localQuery, setLocalQuery] = useState(searchQuery);
+
+  // Keep local query in sync if parent updates it (e.g. cleared externally)
+  useEffect(() => {
+    setLocalQuery(searchQuery);
+  }, [searchQuery]);
+
+  // Debounce query propagation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localQuery !== searchQuery) {
+        onSearchChange(localQuery);
+      }
+    }, 150); // 150ms is optimal to feel snappy yet debounce fast typing
+    return () => clearTimeout(timer);
+  }, [localQuery, searchQuery, onSearchChange]);
+
+  const handleClear = () => {
+    setLocalQuery('');
+    onSearchChange('');
+  };
 
   return (
     <nav className="navbar">
@@ -47,19 +68,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="text"
               className="search-input"
               placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
+              value={localQuery}
+              onChange={(e) => setLocalQuery(e.target.value)}
             />
-            {searchQuery && (
+            {localQuery && (
               <button
                 className="search-clear"
-                onClick={() => onSearchChange('')}
+                onClick={handleClear}
                 title="Clear search"
               >
                 <X size={14} />
               </button>
             )}
           </div>
+
 
           <select
             className="search-category-select"
