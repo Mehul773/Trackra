@@ -13,10 +13,11 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Module Resolution */
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "ignoreDeprecations": "6.0",
 
     /* Emit */
     "outDir": "./dist",

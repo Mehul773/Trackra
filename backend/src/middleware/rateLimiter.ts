@@ -1,5 +1,4 @@
 import rateLimit from 'express-rate-limit';
-import { ApiError } from '../utils/ApiError';
 
 /**
  * Global rate limiter: 100 requests per 15 minutes per IP.
@@ -11,10 +10,10 @@ export const globalLimiter = rateLimit({
   max: 100,
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers (deprecated)
-  handler: (_req, _res) => {
-    throw ApiError.tooManyRequests(
-      'Too many requests. Please try again in 15 minutes.'
-    );
+  message: {
+    success: false,
+    statusCode: 429,
+    message: 'Too many requests. Please try again in 15 minutes.',
   },
 });
 
@@ -28,9 +27,9 @@ export const extractLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req, _res) => {
-    throw ApiError.tooManyRequests(
-      'AI extraction limit reached. You can extract 10 jobs per 15 minutes.'
-    );
+  message: {
+    success: false,
+    statusCode: 429,
+    message: 'AI extraction limit reached. You can extract 10 jobs per 15 minutes.',
   },
 });

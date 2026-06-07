@@ -13,6 +13,19 @@ import { jobsToCsv } from '../utils/csvExporter';
  */
 
 /**
+ * Helper to safely extract a string param from req.params.
+ * Express 5 types params values as string | string[],
+ * but route params like :id are always strings.
+ */
+const getParam = (req: Request, name: string): string => {
+  const value = req.params[name];
+  if (typeof value !== 'string') {
+    throw ApiError.badRequest(`Missing or invalid parameter: ${name}`);
+  }
+  return value;
+};
+
+/**
  * GET /api/jobs?status=APPLIED
  * Get all jobs for the authenticated user.
  * Optional query param `status` filters by job status.
@@ -20,7 +33,8 @@ import { jobsToCsv } from '../utils/csvExporter';
 export const getAllJobs = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!.id;
-    const status = req.query['status'] as JobStatus | undefined;
+    const rawStatus = req.query['status'];
+    const status = typeof rawStatus === 'string' ? rawStatus as JobStatus : undefined;
 
     // Validate status if provided
     if (status && !Object.values(JobStatus).includes(status)) {
@@ -42,7 +56,7 @@ export const getAllJobs = asyncHandler(
 export const getJobById = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!.id;
-    const jobId = req.params['id']!;
+    const jobId = getParam(req, 'id');
 
     const job = await jobsService.getJobById(jobId, userId);
 
@@ -74,7 +88,7 @@ export const createJob = asyncHandler(
 export const updateJob = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!.id;
-    const jobId = req.params['id']!;
+    const jobId = getParam(req, 'id');
 
     const job = await jobsService.updateJob(jobId, userId, req.body);
 
@@ -89,7 +103,7 @@ export const updateJob = asyncHandler(
 export const deleteJob = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!.id;
-    const jobId = req.params['id']!;
+    const jobId = getParam(req, 'id');
 
     await jobsService.deleteJob(jobId, userId);
 

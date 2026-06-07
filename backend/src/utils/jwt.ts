@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 
 /**
@@ -16,9 +16,12 @@ export interface JwtPayload {
  * Returns a token string like "eyJhbGciOi..."
  */
 export const signToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN,
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const options: SignOptions = {
+    expiresIn: env.JWT_EXPIRES_IN as any,
+  };
+
+  return jwt.sign(payload, env.JWT_SECRET, options);
 };
 
 /**

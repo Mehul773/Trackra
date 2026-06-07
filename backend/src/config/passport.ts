@@ -67,7 +67,7 @@ passport.use(
 
 // Serialize: What gets stored in the session (just the user ID)
 // We use JWT so these are minimal, but Passport requires them
-passport.serializeUser((user: Express.User, done) => {
+passport.serializeUser((user: Express.User, done: (err: unknown, id?: unknown) => void) => {
   done(null, (user as { id: string }).id);
 });
 

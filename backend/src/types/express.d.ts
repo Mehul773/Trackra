@@ -1,22 +1,21 @@
 /**
  * Declaration merging: extending Express's built-in Request type.
  *
- * By default, req.user doesn't exist on Express's Request type.
- * Our auth middleware sets req.user after JWT verification, but
- * TypeScript doesn't know about that — it would throw:
- *   "Property 'user' does not exist on type 'Request'"
+ * By default, req.user is typed as Express.User (which is an empty interface).
+ * Our auth middleware sets req.user to a Prisma User object.
+ * This file tells TypeScript what shape req.user actually has.
  *
- * This file tells TypeScript: "Hey, Request also has a `user` property."
- * It MERGES with Express's existing Request interface.
+ * Note: Passport.js already declares `user?: User` on Request.
+ * We override Express.User to match our Prisma User shape instead
+ * of redeclaring `user` on Request (which would cause a conflict).
  */
 
-import { User } from '@prisma/client';
+import { User as PrismaUser } from '@prisma/client';
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: User;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface User extends PrismaUser {}
   }
 }
 

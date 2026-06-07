@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { ApiError } from '../utils/ApiError';
 import { env } from '../config/env';
 import { HttpStatus } from '../enums/HttpStatus.enum';
@@ -12,20 +12,19 @@ import { HttpStatus } from '../enums/HttpStatus.enum';
  *
  * Every thrown ApiError and every unhandled exception ends up here.
  */
-export const errorHandler = (
+export const errorHandler: ErrorRequestHandler = (
   err: Error,
   _req: Request,
   res: Response,
   _next: NextFunction
-): void => {
+) => {
   // If it's our custom ApiError, use its status code and message
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({
       success: false,
       statusCode: err.statusCode,
       message: err.message,
-      // Only include stack trace in development
-      ...(env.NODE_ENV === 'development' && { stack: err.stack }),
+      ...(env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
     });
     return;
   }
@@ -41,7 +40,7 @@ export const errorHandler = (
       env.NODE_ENV === 'development'
         ? err.message
         : 'Something went wrong. Please try again later.',
-    ...(env.NODE_ENV === 'development' && { stack: err.stack }),
+    ...(env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
   });
 };
 
