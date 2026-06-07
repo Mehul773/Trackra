@@ -197,7 +197,7 @@ export const getJobsForExport = async (
     const locationCond = { location: { contains: query, mode: 'insensitive' } as Prisma.StringNullableFilter };
     const salaryCond = { salary: { contains: query, mode: 'insensitive' } as Prisma.StringNullableFilter };
     const briefJdCond = { briefJD: { contains: query, mode: 'insensitive' } as Prisma.StringNullableFilter };
-    const contactsCond = {
+    const contactsCond: Prisma.JobWhereInput = {
       contacts: {
         some: {
           OR: [
